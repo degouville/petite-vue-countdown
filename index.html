@@ -1,0 +1,61 @@
+<script type="module">
+  import { createApp } from './src'
+
+  const instructions = `You should set a date as parameter like 👉 '?d=Jan 1, ${ new Date().getFullYear() + 1 } 00:00:00 !'`
+  const second = 1000
+  const minute = second * 60
+  const hour = minute * 60
+  const day = hour * 24
+  const digitalize = n => n > 9 ? n : `0${ n }`
+
+  createApp({
+    timeRemaining: 'Loading...',
+
+    askForParams() {
+      alert(instructions)
+      this.timeRemaining = instructions
+    },
+
+    tick(deadline) {
+      const countDown = new Date(deadline).getTime()
+      const now = new Date().getTime()
+      const distance = countDown - now
+      const isDone = distance < 0
+      if(isDone)
+        this.stopTimer()
+
+      const days = ~~(distance / day)
+      const hours = digitalize(~~((distance % day) / hour))
+      const minutes = digitalize(~~((distance % hour) / minute))
+      const seconds = digitalize(~~((distance % minute) / second))
+      this.timeRemaining = `${ days } days, ${ hours }:${ minutes }:${ seconds }`
+    },
+
+    startTimer(deadline) {
+      this.timer = setInterval(() => this.tick(deadline), 1000)
+    },
+
+    stopTimer() {
+      clearInterval(this.timer)
+    },
+
+    init() {
+      const deadline = new URLSearchParams(window.location.search).get('d')
+      !deadline
+        ? this.askForParams()
+        : this.startTimer(deadline)
+    } 
+  }).mount('#timer')
+</script>
+
+<main id="timer" @mounted="init" @unmounted="stopTimer">
+  <p class="timer">{{ timeRemaining }}</p>
+</main>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  .timer {
+    font-family: 'Press Start 2P', sans-serif;
+  }
+</style>
